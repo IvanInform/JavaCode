@@ -1,0 +1,244 @@
+package cryptography;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+import java.util.Arrays;
+import sun.misc.BASE64Decoder;
+import sun.misc.BASE64Encoder;
+
+class Container_left { public String data; }
+class Constainer_right{public String data;}
+class encrypt{
+
+    public String f(String key){
+    int value=Integer.parseInt(String.valueOf(key));
+     value>>=1;
+    String result=Integer.toString(value);
+    return result;
+    }
+     public String f_back(String key){
+    int value=Integer.parseInt(String.valueOf(key));
+     value<<=1;
+    String result=Integer.toString(value);
+    return result;
+    }
+public String f_encode(String subblock, String key, StringXORer xorer){
+   String result= xorer.encode(subblock, key);
+        
+return result;
+}
+public String f_decode(String subblock, String key, StringXORer xorer){
+   String result= xorer.decode(subblock, key);
+        
+return result;
+}
+public void crypt(String[] left, String []right, int rounds, String key,
+        StringXORer xorer){ 
+    String temp_key=new String(key);
+    int i; String temp;
+     for (int j=0;j<left.length;j++){
+        temp_key=key;
+        System.out.println();
+    for ( i = 0; i < rounds; i++ )
+    {
+        temp = xorer.encode(right[j], f( temp_key));
+                temp_key=f(temp_key);    
+               right[j] = left[j];
+        left[j] = temp;
+     }
+     }
+   
+}
+
+    public void decrypt(String left[], String right[],int rounds, String key,
+   StringXORer xorer )
+    {
+     String temp;
+    
+    for (int i=0;i<rounds;i++){
+       key =f(key);
+    }
+   String temp_key=new String(key);
+     for (int j=left.length-1;j>=0;j--){
+         temp_key=key;
+         System.out.println();
+    for (int i=rounds-1;i>=0;i--){
+    temp=xorer.decode(left[j],temp_key);
+    temp_key=f_back(temp_key);
+    left[j]=right[j];
+    right[j]=temp;
+    }
+    
+    }
+}
+}
+class StringXORer {
+private final Charset UTF8_CHARSET;
+
+    public StringXORer() {
+        this.UTF8_CHARSET = Charset.forName("UTF-8");
+    }
+    public String encode(String s, String key) {
+        
+        return base64Encode(xorWithKey(s.getBytes(), key.getBytes()));
+         }
+
+    public String decode(String s, String key) {
+        return new String(xorWithKey(base64Decode(s), key.getBytes()));
+
+    }
+
+    private byte[] xorWithKey(byte [] a, byte [] key) {
+        byte[] out = new byte[a.length];
+       
+        for (int i = 0; i < a.length; i++) {
+            out[i] = (byte) (a[i] ^ key[i%key.length]);
+        }
+      return out;
+    }
+
+    private byte[] base64Decode(String s) {
+        try {
+            BASE64Decoder d = new BASE64Decoder();
+            return d.decodeBuffer(s);
+        } catch (IOException e) {throw new RuntimeException(e);}
+    }
+
+    private String base64Encode(byte[] bytes) {
+        BASE64Encoder enc = new BASE64Encoder();
+        return enc.encode(bytes).replaceAll("\\s", "");
+
+    }
+}
+/**
+ *
+ * @author Ivan
+ */
+
+public class Feistel {
+    public static void main(String [] args) throws IOException{
+        //Start to work with files:
+BufferedReader in = null;
+BufferedReader in_scrambler=null;
+FileReader key_input=null;
+BufferedWriter bw=null; 
+char buff[]=new char[100];
+char key_buff[]=new char[100];
+StringBuffer key_str=new StringBuffer("");
+StringBuffer str=new StringBuffer ("");
+int [] scrambl_array=new int[3];
+try {    
+          key_input=new FileReader("fiestel_key.txt");
+          
+          in = new BufferedReader(new FileReader("increpted_feistel.txt"));
+             String temp=new String("");
+            while ((temp=in.readLine())!=null){
+                str.append(temp);
+            }   
+          
+           
+            while (key_input.read(key_buff)!=-1){
+              key_str.append(key_buff);
+            
+            }
+             
+      }finally {
+             
+        if (in!=null){
+         in.close();
+         }
+         if (key_input!=null){
+         key_input.close();
+         }
+         if (bw!=null){
+         bw.close();
+         }
+         
+      }  
+        
+        
+        //end work with files
+System.out.println("Entering text from file");
+//here will go text from file
+  System.out.println(str.toString());
+  String input=new String(str.toString());
+  int chunk_length=input.length()/28;
+  String [] left=new String[chunk_length];
+  for (int i=0;i<left.length;i++){left[i]="";}
+  String []right=new String[chunk_length];
+  for (int i=0;i<right.length;i++){right[i]="";}
+  
+String []temp_input=input.split("(?<=\\G.{28})");
+//System.out.println(Arrays.toString(input.split("(?<=\\G.{28})")));
+
+for ( int i=0;i<temp_input.length;i++)
+{for (int j=0;j<temp_input[i].length();j++)
+{
+  if (j<16){left[i]+=Character.toString(temp_input[i].charAt(j));}
+else {
+right[i]+=Character.toString(temp_input[i].charAt(j));
+
+}  
+
+}
+}
+System.out.println();
+
+//CHECK FOR LEFT/RIGHT
+StringBuffer temp3=new StringBuffer();
+ System.out.println();
+ int length3=left.length+right.length;
+ for (int i=0, b=0, d=0;i<length3;i++){
+  if(i%2==0){
+  temp3.append(left[b++]);
+    }
+  else {
+  temp3.append(right[d++]);
+        }
+    }
+ System.out.println(temp3.toString());
+System.out.println();
+
+//initialization of classes encrypt and StringXORer
+    encrypt mycrypt=new encrypt();
+     
+   StringXORer xorer=new StringXORer();
+   
+   //here will go key from file 
+   System.out.println("Getting key from file");
+   String key=key_str.toString().trim();
+    
+ //decrepting string :
+  mycrypt.decrypt(left, right, 5, key, xorer);
+ StringBuffer dicrepted=new StringBuffer();
+ System.out.println();
+ int length=left.length+right.length;
+ for (int i=0, b=0, d=0;i<length;i++){
+  if(i%2==0){
+  dicrepted.append(left[b++]);
+    }
+  else {
+  dicrepted.append(right[d++]);
+        }
+    }
+ System.out.println(dicrepted.toString());
+  
+   
+  //implement print of all the string together through cycle...
+  
+ 
+   try{  
+    bw = new BufferedWriter(new FileWriter("fiestel_decr_output.txt"));
+          bw.write(dicrepted.toString());    
+        }finally{
+        if (bw!=null){bw.close();}  
+        
+        }
+  
+  }
+        
+    }

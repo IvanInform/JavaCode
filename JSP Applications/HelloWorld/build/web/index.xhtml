@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:head>
+
+        <title>Facelet Title</title>
+    </h:head>
+    <h:body>
+        <a href="HelloWorld">Press to go to hello world</a>
+        <f:view>
+            <form action = "HelloWorld" method = "POST" >
+         <input type = "checkbox" name = "maths" checked = "checked" /> Maths
+         <input type = "checkbox" name = "physics"  /> Physics
+         <input type = "checkbox" name = "chemistry" checked = "checked" /> 
+                                          Chemistry
+         <input type = "submit" value = "Select Subject" />
+      </form>
+        </f:view>
+
+    </h:body>
+</html>
+

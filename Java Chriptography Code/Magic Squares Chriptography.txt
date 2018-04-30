@@ -1,0 +1,255 @@
+package magicsquare;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.Arrays;
+class square{
+int [][]magic;
+int size;
+int start;
+int max;
+int cur_row;
+int cur_col;
+int next_row;
+int next_col;
+int num;
+public square() throws IOException{
+magic=new int[99][99];
+for (int i=0;i<99;i++){
+for (int j=0;j<99;j++)
+{
+magic[i][j]=0;
+}
+}
+//BufferedReader cin=new BufferedReader(new InputStreamReader(System.in));
+//size=Integer.parseInt((cin.readLine()));
+size=3;
+start=size/2;
+max=size*size;
+magic[0][start]=1;
+}
+public void fill_square(){
+for (num=2,cur_row=0,cur_col=start;num<=max;num++)
+{
+if ((cur_col+1)>(size-1)){
+next_col=0;
+}
+else {
+next_col=cur_col+1;
+}
+if ((cur_row-1)<0){
+next_row=size-1;
+}
+else {
+next_row=cur_row-1;
+}
+if (magic[next_row][next_col]>0){
+if ((cur_row+1)>(size-1)){
+next_row=0;
+}
+else {
+next_row=cur_row+1;
+next_col=cur_col;
+    }
+    }
+cur_row=next_row;
+cur_col=next_col;
+magic[cur_row][cur_col]=num;
+}
+
+}
+public void draw(){
+for (int i=0;i<size;i++)
+{
+for (int j=0;j<size;j++){
+System.out.print(magic[i][j]+" ");
+}
+System.out.println();
+}
+}
+public int[][] getsquare(){
+    int [][] result=new int[size][size];
+    for (int i=0;i<size;i++){
+    for (int j=0;j<size;j++)
+    {
+    result[i][j]=magic[i][j];
+    }
+    }
+  return result;  
+}
+}
+class cipher{
+String text;
+int [][] magic;
+public cipher(String text, square mysquare) {
+      
+this.text=text;
+this.magic=mysquare.getsquare();
+}
+public String crypt_text(String text){
+this.text=text;
+String[]input_chunks=(text.split("(?<=\\G.{9})"));
+
+StringBuffer added=new StringBuffer();
+for (int i=0;i<input_chunks.length;i++){
+if (input_chunks[i].length()<9)
+{added.append(input_chunks[i]); 
+for (int j=0;j<9-input_chunks[i].length();j++){added.append(" ");}
+
+String newstr=added.toString();
+input_chunks[i]=newstr;
+}
+}
+//System.out.print((input_chunks[0])); System.out.println(input_chunks[1]);
+StringBuffer str=new StringBuffer();
+StringBuffer middle=new StringBuffer();
+for (int b=0;b<input_chunks.length;b++){
+   middle.append(input_chunks[b]);
+for (int i=0;i<3;i++){
+    
+    System.out.print(magic[i][0]+" ");
+char temp=middle.charAt(magic[i][0]-1);
+
+str.append(temp);
+}
+for (int i=0;i<3;i++){
+ System.out.print(magic[i][1]+" ");
+str.append(middle.charAt(magic[i][1]-1));
+}
+for (int i=0;i<3;i++){
+    System.out.print(magic[i][2]+" ");
+str.append(middle.charAt(magic[i][2]-1));
+}
+middle.setLength(0);
+}
+return str.toString();
+}
+public static void swap(char A, char B){
+char temp=A;
+A=B;
+B=temp;
+}
+public String decrypt_text(String text){
+    
+String[]input_chunks=(text.split("(?<=\\G.{9})"));
+System.out.println(Arrays.toString(input_chunks));
+
+StringBuilder str=new StringBuilder();
+StringBuffer middle=new StringBuffer();
+StringBuilder result=new StringBuilder();
+
+for (int b=0;b<input_chunks.length;b++){
+       middle.append(input_chunks[b]);
+       str.append(middle);
+for (int i=0,d=0;i<3;i++,d++){
+    char temp=middle.charAt(d);
+    str.setCharAt(magic[i][0]-1, temp);
+System.out.print(str.toString()+" ");
+
+}
+for (int i=0,d=3;i<3;i++,d++){
+    char temp=middle.charAt(d);
+    str.setCharAt(magic[i][1]-1, temp);
+System.out.print(str.toString()+" ");
+       
+// str.setCharAt((magic[i][1]-1), middle.charAt(d)) ; 
+// System.out.print(str.charAt(magic[i][0]-1)+" ");
+}
+for (int i=0,d=6;i<3;i++,d++){
+    char temp=middle.charAt(d);
+    str.setCharAt(magic[i][2]-1, temp);
+System.out.print(str.toString()+" ");
+    
+      
+//  str.setCharAt((magic[i][2]-1), middle.charAt(d)) ;  
+//  System.out.print(str.charAt(magic[i][0]-1)+" ");
+}
+result.append(str);
+middle.setLength(0);
+str.setLength(0);
+
+}
+return result.toString();
+}
+
+}
+
+public class MagicSquare {
+
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String[] args) throws IOException {
+        // TODO code application logic here
+   square mysquare=new square();
+        mysquare.fill_square();
+        mysquare.draw();
+       cipher cipher=new cipher("",mysquare); 
+       ////beginning working with files
+BufferedReader in = null;
+
+StringBuffer str_string=new StringBuffer ("");
+
+try {    
+        
+          in = new BufferedReader(new FileReader("string_input.txt"));
+             String temp=new String("");
+            while ((temp=in.readLine())!=null){
+                str_string.append(temp);
+       
+      }
+}
+finally {
+             
+        if (in!=null){
+         in.close();
+         }
+              }
+
+       String ciphered= cipher.crypt_text(str_string.toString());
+       BufferedWriter bw=null;
+       try{ bw = new BufferedWriter(new FileWriter("encrypted.txt"));
+          bw.write(ciphered.toString());    
+        }finally{
+        if (bw!=null){bw.close();}  
+        
+        }
+       System.out.println();
+       System.out.println(ciphered);
+       BufferedReader another = null;
+
+StringBuffer other_string=new StringBuffer ("");
+
+try {    
+        
+          another = new BufferedReader(new FileReader("encrypted.txt"));
+             String temp2=new String("");
+            while ((temp2=another.readLine())!=null){
+                other_string.append(temp2);
+       
+      }
+}
+finally {
+             
+        if (another!=null){
+         another.close();
+         }
+              }
+       String dicrepted=cipher.decrypt_text(other_string.toString());
+       System.out.println();
+       System.out.println(dicrepted);
+       BufferedWriter resolved=null;
+       try{ resolved = new BufferedWriter(new FileWriter("dicrepted.txt"));
+          resolved.write(dicrepted.toString());    
+        }finally{
+        if (resolved!=null){resolved.close();}  
+        
+        }
+       
+    }
+    
+}

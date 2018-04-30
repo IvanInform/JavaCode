@@ -1,0 +1,109 @@
+package cryptography;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+import sun.misc.BASE64Decoder;
+import sun.misc.BASE64Encoder;
+class StringXORer {
+private final Charset UTF8_CHARSET;
+
+    StringXORer() {
+        this.UTF8_CHARSET = Charset.forName("UTF-8");
+    }
+    public String encode(String s, String key) {
+        
+        return base64Encode(xorWithKey(s.getBytes(), key.getBytes()));
+         }
+
+    public String decode(String s, String key) {
+        return new String(xorWithKey(base64Decode(s), key.getBytes()));
+
+    }
+
+    private byte[] xorWithKey(byte [] a, byte [] key) {
+        byte[] out = new byte[a.length];
+       
+        for (int i = 0; i < a.length; i++) {
+            out[i] = (byte) (a[i] ^ key[i%key.length]);
+        }
+      return out;
+    }
+
+    private byte[] base64Decode(String s) {
+        try {
+            BASE64Decoder d = new BASE64Decoder();
+            return d.decodeBuffer(s);
+        } catch (IOException e) {throw new RuntimeException(e);}
+    }
+
+    private String base64Encode(byte[] bytes) {
+        BASE64Encoder enc = new BASE64Encoder();
+        return enc.encode(bytes).replaceAll("\\s", "");
+
+    }
+}
+public class decription {
+      public static void decrypt(StringXORer stringxorer)throws FileNotFoundException, IOException{
+BufferedReader in = null;
+FileReader key_input=null;
+BufferedWriter bw=null; 
+char buff[]=new char[100];
+char key_buff[]=new char[100];
+StringBuffer key_str=new StringBuffer("");
+StringBuffer str=new StringBuffer ("");
+try {
+    
+          key_input=new FileReader("key.txt");
+          in = new BufferedReader(new FileReader("output.txt"));
+             String temp=new String("");
+            while ((temp=in.readLine())!=null){
+                str.append(temp);
+            }   
+//            System.out.println(str.toString());
+            while (key_input.read(key_buff)!=-1){
+              key_str.append(key_buff);
+            
+            }
+
+ String encrypted=stringxorer.decode(str.toString(),key_str.toString().trim());
+             System.out.println(encrypted);
+          bw = new BufferedWriter(new FileWriter("input_dec.txt"));
+          bw.write(encrypted);
+             
+      }finally {
+             
+        if (in!=null){
+         in.close();
+         }
+         if (key_input!=null){
+         key_input.close();
+         }
+         if (bw!=null){
+         bw.close();
+         }
+         
+      }
+       
+    }
+     public static void main(String[] args) throws IOException  {
+
+          StringXORer stringxorer=new StringXORer();
+        
+System.out.println("Данная программа раскодирует файл \"output.txt\"");
+System.out.println("Ключ храниться в файле \"key.txt\". Для начала работы нажмите <y>");
+InputStreamReader cin=new InputStreamReader(System.in);
+char target;
+target=(char)cin.read();
+if ((Character.compare(target, 'y')==0)||(Character.compare(target, 'Y')==0))
+{
+    decription.decrypt(stringxorer);
+        
+}
+     }
+}
